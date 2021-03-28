@@ -1,1 +1,54 @@
-// TODO
+.container {
+  margin: 1rem auto;
+
+  a {
+    display: block;
+    
+    &:last-child {
+      margin-bottom: 3rem;
+    }
+
+    & + a {
+      margin-top: 2.5rem;
+    }
+
+    h1 {
+      color: var(--heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      margin-top: 0.35rem;
+    }
+
+    div {
+      display: flex;
+
+      span {
+        font-size: 0.875rem;
+
+        svg {
+          height: 0.9275rem;
+          margin-right: 0.5rem;
+          width: 0.9375rem;
+        }
+        
+        & + span {
+          margin-left: 1rem;
+        }
+      }
+    }
+  }
+
+  button {
+    border: 0;
+    background: transparent;
+    color: var(--highlight);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+}

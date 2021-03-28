@@ -1,1 +1,47 @@
-// TODO
+.container {
+  align-items: center;
+
+  div {
+    margin: 1.5rem auto;
+
+    > div {
+      span {
+        svg {
+          margin-right: 0.25rem;
+        }
+      }
+
+      span + span {
+        margin-left: 1rem;
+      }
+    }
+
+    article {
+      a {
+        color: var(--highlight);
+        transition: color 0.2s;
+
+        &:hover {
+          color: darken(#FF57B2, 10%);
+        }
+      }
+
+      h2 {
+        font-size: 1.35rem;
+      }
+
+      p {
+        font-size: 1.125rem;
+
+        & + p {
+          margin-top: 1.125rem;
+        }
+      }
+    }
+  }
+
+  img {
+    max-height: 25rem;
+    width: 100%;
+  }
+}

@@ -9,7 +9,7 @@
     }
 
     & + a {
-      margin-top: 2.5rem;
+      margin-top: 3rem;
     }
 
     h1 {
@@ -25,20 +25,20 @@
       margin-top: 0.35rem;
     }
 
-    div {
+    ul {
       display: flex;
-
-      span {
-        font-size: 0.875rem;
-
+      list-style: none;
+      margin-top: 1.5rem;
+  
+      li {
+        font-size:0.875rem;
+  
         svg {
-          height: 0.9275rem;
           margin-right: 0.5rem;
-          width: 0.9375rem;
         }
-        
-        & + span {
-          margin-left: 1rem;
+  
+        & + li {
+          margin-left: 1.625rem;
         }
       }
     }

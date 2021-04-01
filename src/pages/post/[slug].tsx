@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
 import Prismic from '@prismicio/client';
 import { useRouter } from 'next/router';
@@ -13,6 +14,7 @@ import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import Comments from '../../components/Comments';
 
 interface Post {
   first_publication_date: string | null;
@@ -33,9 +35,28 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  navigation: {
+    prevPost: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    }[];
+    nextPost: {
+      uid: string;
+      data: {
+        title: string;
+      };
+    }[];
+  };
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  navigation,
+  preview,
+}: PostProps): JSX.Element {
   const router = useRouter();
 
   const totalWords = post?.data.content.reduce((total, item) => {
@@ -66,6 +87,14 @@ export default function Post({ post }: PostProps): JSX.Element {
       <main className={`${styles.container}`}>
         <img src={post.data.banner.url} alt="banner" />
 
+        {preview && (
+          <aside>
+            <Link href="/api/exit-preview">
+              <a className={commonStyles.preview}>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
+
         <div className={commonStyles.maxWidth}>
           <h1>{post.data.title}</h1>
           <div>
@@ -93,6 +122,26 @@ export default function Post({ post }: PostProps): JSX.Element {
               />
             </article>
           ))}
+
+          <div className={styles.nav}>
+            {navigation?.prevPost.length > 0 && (
+              <Link href={`/post/${navigation.prevPost[0].uid}`}>
+                <a>
+                  <h3>{navigation.prevPost[0].data.title}</h3> Post anterior
+                </a>
+              </Link>
+            )}
+
+            {navigation?.nextPost.length > 0 && (
+              <Link href={`/post/${navigation.nextPost[0].uid}`}>
+                <a>
+                  <h3>{navigation.nextPost[0].data.title}</h3>Próximo post
+                </a>
+              </Link>
+            )}
+          </div>
+
+          <Comments />
         </div>
       </main>
     </>
@@ -105,7 +154,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     [Prismic.predicates.at('document.type', 'post')],
     {
       fetch: [],
-      pageSize: 20,
+      pageSize: 5,
     }
   );
 
@@ -121,34 +170,62 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const { slug } = params;
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('post', String(slug), {});
+  const response = await prismic.getByUID('post', String(slug), {
+    ref: previewData?.ref || null,
+  });
+
+  const prevPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'post')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.first_publication_date]',
+    }
+  );
+
+  const nextPost = await prismic.query(
+    [Prismic.Predicates.at('document.type', 'post')],
+    {
+      pageSize: 1,
+      after: response.id,
+      orderings: '[document.last_publication_date desc]',
+    }
+  );
 
   const post = {
-    uid: response.uid || '',
-    first_publication_date: response.first_publication_date || '',
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
-      title: response?.data.title || '',
-      subtitle: response?.data.subtitle || '',
-      author: response?.data.author || '',
+      title: response?.data.title,
+      subtitle: response?.data.subtitle,
+      author: response?.data.author,
       banner: {
-        url: response?.data.banner.url || null,
+        url: response?.data.banner.url,
       },
-      content:
-        response?.data.content.map(content => {
-          return {
-            heading: content.heading || '',
-            body: [...content.body] || [],
-          };
-        }) || [],
+      content: response?.data.content.map(content => {
+        return {
+          heading: content.heading,
+          body: [...content.body],
+        };
+      }),
     },
   };
 
   return {
     props: {
       post,
+      navigation: {
+        prevPost: prevPost?.results,
+        nextPost: nextPost?.results,
+      },
+      preview,
     },
   };
 };

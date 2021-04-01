@@ -18,6 +18,7 @@ import Comments from '../../components/Comments';
 
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -60,9 +61,13 @@ export default function Post({
   const router = useRouter();
 
   const totalWords = post?.data.content.reduce((total, item) => {
-    const headingWordsCount = item.heading?.split(' ').length;
+    const headingWordsCount = item.heading
+      ? item.heading?.split(' ').length
+      : 0;
 
-    const bodyWordsCount = item.body.map(bItem => bItem.text.split(' ').length);
+    const bodyWordsCount = item.body
+      ? item.body.map(bItem => bItem.text.split(' ').length)
+      : [0];
 
     let bodyCount = 0;
     bodyWordsCount.map(count => (bodyCount += count));
@@ -87,14 +92,6 @@ export default function Post({
       <main className={`${styles.container}`}>
         <img src={post.data.banner.url} alt="banner" />
 
-        {preview && (
-          <aside>
-            <Link href="/api/exit-preview">
-              <a className={commonStyles.preview}>Sair do modo Preview</a>
-            </Link>
-          </aside>
-        )}
-
         <div className={commonStyles.maxWidth}>
           <h1>{post.data.title}</h1>
           <div>
@@ -111,6 +108,12 @@ export default function Post({
             <span>
               <FiClock />
               {Math.ceil(totalWords / 200)} min
+            </span>
+            <span>
+              Editado em:{' '}
+              {format(new Date(post.last_publication_date), 'dd MMM yyyy', {
+                locale: ptBR,
+              })}
             </span>
           </div>
 
@@ -143,6 +146,13 @@ export default function Post({
 
           <Comments />
         </div>
+        {preview && (
+          <aside>
+            <Link href="/api/exit-preview">
+              <a className={commonStyles.preview}>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
       </main>
     </>
   );
@@ -202,6 +212,7 @@ export const getStaticProps: GetStaticProps = async ({
   const post = {
     uid: response.uid,
     first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
     data: {
       title: response?.data.title,
       subtitle: response?.data.subtitle,
